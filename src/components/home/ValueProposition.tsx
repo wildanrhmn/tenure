@@ -2,7 +2,7 @@ import { CheckCircle, Star, Users } from "lucide-react";
 
 export default function ValueProposition() {
   return (
-    <section className="py-24 bg-gradient-to-b from-[#F8F8F4] to-white">
+    <section className="py-24 bg-gradient-to-b from-white to-slate-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-[#1A365D] mb-6">

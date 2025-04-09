@@ -3,7 +3,7 @@ import { Building, Home } from "lucide-react";
 
 export default function PropertyCategories() {
   return (
-    <section className="py-24 bg-[#E8E8E0]">
+    <section className="py-24 bg-gradient-to-b from-white to-slate-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-[#1A365D] mb-4">
