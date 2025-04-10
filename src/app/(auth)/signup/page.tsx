@@ -8,13 +8,17 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Eye, EyeOff, Mail, Lock } from "lucide-react"
+import { Eye, EyeOff, Mail, Lock, User, Phone } from "lucide-react"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
-export default function LoginPage() {
+export default function SignupPage() {
+  const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [phoneNumber, setPhoneNumber] = useState("")
+  const [role, setRole] = useState<"buyer" | "agent">("buyer")
   const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
+  const [agreeTerms, setAgreeTerms] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,11 +27,11 @@ export default function LoginPage() {
 
     // Simulate API call
     try {
-      // TODO: Implement login logic
-      console.log("Login attempt with:", { email, password, rememberMe })
+      // TODO: Implement signup logic
+      console.log("Signup attempt with:", { name, email, password, phoneNumber, role, agreeTerms })
       await new Promise((resolve) => setTimeout(resolve, 1000))
     } catch (error) {
-      console.error("Login error:", error)
+      console.error("Signup error:", error)
     } finally {
       setIsLoading(false)
     }
@@ -36,11 +40,29 @@ export default function LoginPage() {
   return (
     <div>
       <div className="mb-6 text-center">
-        <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>
-        <p className="mt-2 text-sm text-gray-500">Sign in to your account to continue</p>
+        <h2 className="text-2xl font-bold text-gray-900">Create an account</h2>
+        <p className="mt-2 text-sm text-gray-500">Join Tenure to manage your properties</p>
       </div>
 
       <form className="space-y-5" onSubmit={handleSubmit}>
+        <div className="space-y-2">
+          <Label htmlFor="name">Full Name</Label>
+          <div className="relative">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <User size={18} />
+            </div>
+            <Input
+              id="name"
+              type="text"
+              placeholder="John Doe"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="pl-10"
+              required
+            />
+          </div>
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="email">Email address</Label>
           <div className="relative">
@@ -60,12 +82,7 @@ export default function LoginPage() {
         </div>
 
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
-            <Link href="/forgot-password" className="text-sm font-medium text-teal-600 hover:text-teal-500">
-              Forgot password?
-            </Link>
-          </div>
+          <Label htmlFor="password">Password</Label>
           <div className="relative">
             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
               <Lock size={18} />
@@ -87,24 +104,78 @@ export default function LoginPage() {
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
+          <p className="text-xs text-gray-500">Password must be at least 8 characters long</p>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="remember"
-            checked={rememberMe}
-            onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-          />
-          <label
-            htmlFor="remember"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        <div className="space-y-2">
+          <Label htmlFor="phoneNumber">Phone Number</Label>
+          <div className="relative">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <Phone size={18} />
+            </div>
+            <Input
+              id="phoneNumber"
+              type="tel"
+              placeholder="+1 (555) 123-4567"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              className="pl-10"
+              required
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="role">I want to register as</Label>
+          <RadioGroup
+            value={role}
+            onValueChange={(value) => setRole(value as "buyer" | "agent")}
+            className="flex gap-4"
           >
-            Remember me
-          </label>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="buyer" id="buyer" />
+              <Label htmlFor="buyer" className="cursor-pointer">
+                Buyer
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="agent" id="agent" />
+              <Label htmlFor="agent" className="cursor-pointer">
+                Agent
+              </Label>
+            </div>
+          </RadioGroup>
         </div>
 
-        <Button type="submit" className="w-full bg-teal-600 hover:bg-teal-700" disabled={isLoading}>
-          {isLoading ? "Signing in..." : "Sign in"}
+        <div className="flex items-start space-x-2">
+          <Checkbox
+            id="terms"
+            checked={agreeTerms}
+            onCheckedChange={(checked) => setAgreeTerms(checked as boolean)}
+            className="mt-1"
+          />
+          <div className="grid gap-1.5 leading-none">
+            <label
+              htmlFor="terms"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              I agree to the Terms of Service and Privacy Policy
+            </label>
+            <p className="text-xs text-gray-500">
+              By creating an account, you agree to our{" "}
+              <Link href="/terms" className="text-teal-600 hover:text-teal-500 underline">
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link href="/privacy" className="text-teal-600 hover:text-teal-500 underline">
+                Privacy Policy
+              </Link>
+            </p>
+          </div>
+        </div>
+
+        <Button type="submit" className="w-full bg-teal-600 hover:bg-teal-700" disabled={isLoading || !agreeTerms}>
+          {isLoading ? "Creating account..." : "Create account"}
         </Button>
       </form>
 
@@ -151,9 +222,9 @@ export default function LoginPage() {
 
       <div className="mt-6 text-center">
         <p className="text-sm text-gray-600">
-          Don't have an account?{" "}
-          <Link href="/signup" className="font-medium text-teal-600 hover:text-teal-500">
-            Sign up
+          Already have an account?{" "}
+          <Link href="/login" className="font-medium text-teal-600 hover:text-teal-500">
+            Sign in
           </Link>
         </p>
       </div>
