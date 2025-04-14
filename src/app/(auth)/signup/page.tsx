@@ -1,37 +1,69 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff, Mail, Lock, User, Phone } from "lucide-react"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { signupSchema, type SignupFormData } from "@/lib/validations/auth"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { ControllerRenderProps } from "react-hook-form"
 
 export default function SignupPage() {
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [phoneNumber, setPhoneNumber] = useState("")
-  const [role, setRole] = useState<"buyer" | "agent">("buyer")
-  const [showPassword, setShowPassword] = useState(false)
-  const [agreeTerms, setAgreeTerms] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
+  const [showPassword, setShowPassword] = React.useState(false)
+  const [isLoading, setIsLoading] = React.useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const form = useForm<SignupFormData>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      phoneNumber: "",
+      role: "user",
+      agreeTerms: false,
+    },
+  })
+
+  const onSubmit = async (data: SignupFormData) => {
     setIsLoading(true)
 
-    // Simulate API call
     try {
-      // TODO: Implement signup logic
-      console.log("Signup attempt with:", { name, email, password, phoneNumber, role, agreeTerms })
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          password: data.password,
+          phone: data.phoneNumber,
+          role: data.role,
+        }),
+      })
+
+      const responseData = await response.json()
+
+      if (!response.ok) {
+        throw new Error(responseData.message || 'Registration failed')
+      }
+
+      toast.success("Registration successful! Please check your email to verify your account.")
+      router.push("/login")
     } catch (error) {
       console.error("Signup error:", error)
+      toast.error(error instanceof Error ? error.message : "An error occurred during registration")
     } finally {
       setIsLoading(false)
     }
@@ -44,140 +76,205 @@ export default function SignupPage() {
         <p className="mt-2 text-sm text-gray-500">Join Tenure to manage your properties</p>
       </div>
 
-      <form className="space-y-5" onSubmit={handleSubmit}>
-        <div className="space-y-2">
-          <Label htmlFor="name">Full Name</Label>
-          <div className="relative">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <User size={18} />
-            </div>
-            <Input
-              id="name"
-              type="text"
-              placeholder="John Doe"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="pl-10"
-              required
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="firstName"
+              render={({ field }: { field: ControllerRenderProps<SignupFormData, "firstName"> }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel>First Name</FormLabel>
+                  <div className="relative">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <User size={18} />
+                    </div>
+                    <FormControl>
+                      <Input
+                        placeholder="John"
+                        className="pl-10"
+                        {...field}
+                      />
+                    </FormControl>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="lastName"
+              render={({ field }: { field: ControllerRenderProps<SignupFormData, "lastName"> }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel>Last Name</FormLabel>
+                  <div className="relative">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <User size={18} />
+                    </div>
+                    <FormControl>
+                      <Input
+                        placeholder="Doe"
+                        className="pl-10"
+                        {...field}
+                      />
+                    </FormControl>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
           </div>
-        </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="email">Email address</Label>
-          <div className="relative">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <Mail size={18} />
-            </div>
-            <Input
-              id="email"
-              type="email"
-              placeholder="name@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="pl-10"
-              required
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
-          <div className="relative">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <Lock size={18} />
-            </div>
-            <Input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="pl-10"
-              required
-            />
-            <button
-              type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-          </div>
-          <p className="text-xs text-gray-500">Password must be at least 8 characters long</p>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="phoneNumber">Phone Number</Label>
-          <div className="relative">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <Phone size={18} />
-            </div>
-            <Input
-              id="phoneNumber"
-              type="tel"
-              placeholder="+1 (555) 123-4567"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              className="pl-10"
-              required
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="role">I want to register as</Label>
-          <RadioGroup
-            value={role}
-            onValueChange={(value) => setRole(value as "buyer" | "agent")}
-            className="flex gap-4"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="buyer" id="buyer" />
-              <Label htmlFor="buyer" className="cursor-pointer">
-                Buyer
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="agent" id="agent" />
-              <Label htmlFor="agent" className="cursor-pointer">
-                Agent
-              </Label>
-            </div>
-          </RadioGroup>
-        </div>
-
-        <div className="flex items-start space-x-2">
-          <Checkbox
-            id="terms"
-            checked={agreeTerms}
-            onCheckedChange={(checked) => setAgreeTerms(checked as boolean)}
-            className="mt-1"
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }: { field: ControllerRenderProps<SignupFormData, "email"> }) => (
+              <FormItem className="space-y-2">
+                <FormLabel>Email address</FormLabel>
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    <Mail size={18} />
+                  </div>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="name@example.com"
+                      className="pl-10"
+                      {...field}
+                    />
+                  </FormControl>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          <div className="grid gap-1.5 leading-none">
-            <label
-              htmlFor="terms"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              I agree to the Terms of Service and Privacy Policy
-            </label>
-            <p className="text-xs text-gray-500">
-              By creating an account, you agree to our{" "}
-              <Link href="/terms" className="text-teal-600 hover:text-teal-500 underline">
-                Terms of Service
-              </Link>{" "}
-              and{" "}
-              <Link href="/privacy" className="text-teal-600 hover:text-teal-500 underline">
-                Privacy Policy
-              </Link>
-            </p>
-          </div>
-        </div>
 
-        <Button type="submit" className="w-full bg-teal-600 hover:bg-teal-700" disabled={isLoading || !agreeTerms}>
-          {isLoading ? "Creating account..." : "Create account"}
-        </Button>
-      </form>
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }: { field: ControllerRenderProps<SignupFormData, "password"> }) => (
+              <FormItem className="space-y-2">
+                <FormLabel>Password</FormLabel>
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    <Lock size={18} />
+                  </div>
+                  <FormControl>
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      className="pl-10"
+                      {...field}
+                    />
+                  </FormControl>
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="phoneNumber"
+            render={({ field }: { field: ControllerRenderProps<SignupFormData, "phoneNumber"> }) => (
+              <FormItem className="space-y-2">
+                <FormLabel>Phone Number</FormLabel>
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    <Phone size={18} />
+                  </div>
+                  <FormControl>
+                    <Input
+                      type="tel"
+                      placeholder="+1 (555) 123-4567"
+                      className="pl-10"
+                      {...field}
+                    />
+                  </FormControl>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="role"
+            render={({ field }: { field: ControllerRenderProps<SignupFormData, "role"> }) => (
+              <FormItem className="space-y-2">
+                <FormLabel>I want to register as</FormLabel>
+                <FormControl>
+                  <RadioGroup
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    className="flex gap-4"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="user" id="user" />
+                      <Label htmlFor="user" className="cursor-pointer">
+                        User
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="agent" id="agent" />
+                      <Label htmlFor="agent" className="cursor-pointer">
+                        Agent
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="agreeTerms"
+            render={({ field }: { field: ControllerRenderProps<SignupFormData, "agreeTerms"> }) => (
+              <FormItem>
+                <div className="flex items-start space-x-2">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      className="mt-1"
+                    />
+                  </FormControl>
+                  <div className="grid gap-1.5 leading-none">
+                    <FormLabel className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      I agree to the Terms of Service and Privacy Policy
+                    </FormLabel>
+                    <p className="text-xs text-gray-500">
+                      By creating an account, you agree to our{" "}
+                      <Link href="/terms" className="text-teal-600 hover:text-teal-500 underline">
+                        Terms of Service
+                      </Link>{" "}
+                      and{" "}
+                      <Link href="/privacy" className="text-teal-600 hover:text-teal-500 underline">
+                        Privacy Policy
+                      </Link>
+                    </p>
+                  </div>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Button type="submit" className="w-full bg-teal-600 hover:bg-teal-700" disabled={isLoading}>
+            {isLoading ? "Creating account..." : "Create account"}
+          </Button>
+        </form>
+      </Form>
 
       <div className="mt-6">
         <div className="relative">

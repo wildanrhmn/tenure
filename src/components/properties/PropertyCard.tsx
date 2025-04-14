@@ -5,7 +5,7 @@ import { formatCurrency } from '@/utils/formatters';
 import { Property } from '@/types/property';
 import { useState } from 'react';
 import { saveProperty, unsaveProperty } from '@/services/propertyService';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 
 interface PropertyCardProps {
   property: Property;
@@ -18,7 +18,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
   );
   const [saving, setSaving] = useState(false);
 
-  const handleSaveProperty = async (e) => {
+  const handleSaveProperty = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
     

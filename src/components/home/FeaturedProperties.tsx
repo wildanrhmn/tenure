@@ -6,8 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 export default function FeaturedProperties() {
   return (
     <section className="py-12 sm:py-16 md:py-20 container mx-auto px-4">
-      <div className="flex flex-col xs:flex-row justify-between items-start xs:items-center gap-4 xs:gap-0 mb-8 xs:mb-12">
-        <h2 className="text-4xl md:text-5xl font-bold text-[#1A365D] relative after:content-[''] after:absolute after:-bottom-4 after:left-0 after:w-16 xs:w-20 sm:w-24 after:h-1 after:bg-[#2A623D]">
+      <div className="flex xs:flex-row justify-between items-start xs:items-center gap-4 xs:gap-0 mb-8 xs:mb-12">
+        <h2 className="text-4xl md:text-5xl font-bold text-[#1A365D] relative after:content-[''] after:absolute after:-bottom-4 after:left-0 after:w-16 after:h-1 after:bg-[#2A623D]">
           Featured Properties
         </h2>
         <Link
@@ -18,7 +18,7 @@ export default function FeaturedProperties() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10 pt-24">
         {[
           {
             id: 1,

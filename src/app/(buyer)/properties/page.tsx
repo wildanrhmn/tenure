@@ -8,12 +8,20 @@ import SearchBar from '@/components/properties/SearchBar';
 import Pagination from '@/components/common/Pagination';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { fetchProperties } from '@/services/propertyService';
+import { Property, PropertyFilters as PropertyFiltersType } from '@/types/property';
+
+interface PropertiesResponse {
+  properties: Property[];
+  total: number;
+  currentPage: number;
+  totalPages: number;
+}
 
 export default function PropertiesPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [properties, setProperties] = useState([]);
+  const [properties, setProperties] = useState<Property[]>([]);
   const [totalProperties, setTotalProperties] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -37,9 +45,9 @@ export default function PropertiesPage() {
     const getProperties = async () => {
       setLoading(true);
       try {
-        const queryParams = {
+        const queryParams: PropertyFiltersType = {
           page,
-          limit: '9', // 9 properties per page for 3x3 grid
+          limit: '9',
           search,
           type,
           status,
@@ -53,7 +61,7 @@ export default function PropertiesPage() {
           order
         };
 
-        const response = await fetchProperties(queryParams);
+        const response = await fetchProperties(queryParams) as PropertiesResponse;
         setProperties(response.properties);
         setTotalProperties(response.total);
         setCurrentPage(response.currentPage);
@@ -69,7 +77,7 @@ export default function PropertiesPage() {
   }, [page, search, type, status, minPrice, maxPrice, minBedrooms, minBathrooms, city, state, sort, order]);
 
   // Update URL when filters change
-  const handleFilterChange = (filters) => {
+  const handleFilterChange = (filters: Record<string, string>) => {
     const params = new URLSearchParams(searchParams);
     
     // Reset to page 1 when filters change
@@ -88,7 +96,7 @@ export default function PropertiesPage() {
   };
 
   // Handle page change
-  const handlePageChange = (newPage) => {
+  const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams(searchParams);
     params.set('page', newPage.toString());
     router.push(`/properties?${params.toString()}`);

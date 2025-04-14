@@ -1,33 +1,65 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { signIn } from "next-auth/react"
+import { useForm, type SubmitHandler } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff, Mail, Lock } from "lucide-react"
+import { loginSchema, type LoginFormData } from "@/lib/validations/auth"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { ControllerRenderProps } from "react-hook-form"
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
+  const [showPassword, setShowPassword] = React.useState(false)
+  const [isLoading, setIsLoading] = React.useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const form = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema) as any,
+    defaultValues: {
+      email: "",
+      password: "",
+      rememberMe: false,
+    },
+  })
+
+  const onSubmit: SubmitHandler<LoginFormData> = async (data) => {
     setIsLoading(true)
 
-    // Simulate API call
     try {
-      // TODO: Implement login logic
-      console.log("Login attempt with:", { email, password, rememberMe })
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const result = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      })
+
+      if (result?.error) {
+        if (result.error === "Email not verified") {
+          toast.error("Please verify your email first", {
+            action: {
+              label: "Resend Verification",
+              onClick: () => router.push("/resend-verification"),
+            },
+          })
+          return
+        }
+        toast.error("Invalid email or password")
+        return
+      }
+
+      toast.success("Login successful")
+      router.push("/")
+      router.refresh()
     } catch (error) {
       console.error("Login error:", error)
+      toast.error("An error occurred during login")
     } finally {
       setIsLoading(false)
     }
@@ -40,73 +72,94 @@ export default function LoginPage() {
         <p className="mt-2 text-sm text-gray-500">Sign in to your account to continue</p>
       </div>
 
-      <form className="space-y-5" onSubmit={handleSubmit}>
-        <div className="space-y-2">
-          <Label htmlFor="email">Email address</Label>
-          <div className="relative">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <Mail size={18} />
-            </div>
-            <Input
-              id="email"
-              type="email"
-              placeholder="name@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="pl-10"
-              required
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
-            <Link href="/forgot-password" className="text-sm font-medium text-teal-600 hover:text-teal-500">
-              Forgot password?
-            </Link>
-          </div>
-          <div className="relative">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <Lock size={18} />
-            </div>
-            <Input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="pl-10"
-              required
-            />
-            <button
-              type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-          </div>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="remember"
-            checked={rememberMe}
-            onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+          <FormField
+            control={form.control as any}
+            name="email"
+            render={({ field }: { field: ControllerRenderProps<LoginFormData, "email"> }) => (
+              <FormItem className="space-y-2">
+                <FormLabel>Email address</FormLabel>
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    <Mail size={18} />
+                  </div>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="name@example.com"
+                      className="pl-10"
+                      {...field}
+                    />
+                  </FormControl>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          <label
-            htmlFor="remember"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            Remember me
-          </label>
-        </div>
 
-        <Button type="submit" className="w-full bg-teal-600 hover:bg-teal-700" disabled={isLoading}>
-          {isLoading ? "Signing in..." : "Sign in"}
-        </Button>
-      </form>
+          <FormField
+            control={form.control as any}
+            name="password"
+            render={({ field }: { field: ControllerRenderProps<LoginFormData, "password"> }) => (
+              <FormItem className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <FormLabel>Password</FormLabel>
+                  <Link href="/forgot-password" className="text-sm font-medium text-teal-600 hover:text-teal-500">
+                    Forgot password?
+                  </Link>
+                </div>
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    <Lock size={18} />
+                  </div>
+                  <FormControl>
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      className="pl-10"
+                      {...field}
+                    />
+                  </FormControl>
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control as any}
+            name="rememberMe"
+            render={({ field }: { field: ControllerRenderProps<LoginFormData, "rememberMe"> }) => (
+              <FormItem>
+                <div className="flex items-center space-x-2">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormLabel className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Remember me
+                  </FormLabel>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Button type="submit" className="w-full bg-teal-600 hover:bg-teal-700" disabled={isLoading}>
+            {isLoading ? "Signing in..." : "Sign in"}
+          </Button>
+        </form>
+      </Form>
 
       <div className="mt-6">
         <div className="relative">
