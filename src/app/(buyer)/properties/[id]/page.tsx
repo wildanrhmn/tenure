@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useParams } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
 import { fetchPropertyById, fetchSimilarProperties } from '@/services/propertyService';
 import { formatCurrency, formatDate, formatAddress } from '@/utils/formatters';
 import { Property } from '@/types/property';
@@ -11,35 +12,29 @@ import LoadingSpinner from '@/components/common/LoadingSpinner';
 import PropertyCard from '@/components/properties/PropertyCard';
 import { Heart, Share2, MapPin, Calendar, Home, Bed, Bath, Grid, Check } from 'lucide-react';
 
+interface PropertyImage {
+  url: string;
+}
+
 export default function PropertyDetailPage() {
   const { id } = useParams();
-  const [property, setProperty] = useState<Property | null>(null);
-  const [similarProperties, setSimilarProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
 
-  useEffect(() => {
-    const loadPropertyData = async () => {
-      setLoading(true);
-      try {
-        // Fetch property details
-        const propertyData = await fetchPropertyById(id as string) as Property;
-        setProperty(propertyData);
-        
-        // Fetch similar properties
-        const similar = await fetchSimilarProperties(id as string) as Property[];
-        setSimilarProperties(similar);
-      } catch (error) {
-        console.error('Error loading property:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Fetch property details
+  const { data: propertyData, isLoading: isLoadingProperty } = useQuery({
+    queryKey: ['property', id],
+    queryFn: () => fetchPropertyById(id as string),
+    enabled: !!id
+  });
 
-    loadPropertyData();
-  }, [id]);
+  // Fetch similar properties
+  const { data: similarData, isLoading: isLoadingSimilar } = useQuery({
+    queryKey: ['similar-properties', id],
+    queryFn: () => fetchSimilarProperties(id as string),
+    enabled: !!id
+  });
 
-  if (loading) {
+  if (isLoadingProperty) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <LoadingSpinner />
@@ -47,7 +42,7 @@ export default function PropertyDetailPage() {
     );
   }
 
-  if (!property) {
+  if (!propertyData?.property) {
     return (
       <div className="container mx-auto px-4 py-16">
         <div className="text-center">
@@ -62,6 +57,9 @@ export default function PropertyDetailPage() {
       </div>
     );
   }
+
+  const property = propertyData.property;
+  const similarProperties = similarData?.properties || [];
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -106,7 +104,7 @@ export default function PropertyDetailPage() {
         {/* Thumbnail images */}
         {property.images && property.images.length > 1 && (
           <div className="flex overflow-x-auto p-2 space-x-2">
-            {property.images.map((image, index) => (
+            {property.images.map((image: PropertyImage, index: number) => (
               <div
                 key={index}
                 className={`cursor-pointer flex-shrink-0 h-20 w-32 relative rounded-md overflow-hidden
@@ -166,7 +164,7 @@ export default function PropertyDetailPage() {
               <div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-3">Features</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {property.features.map((feature, index) => (
+                  {property.features.map((feature: string, index: number) => (
                     <div key={index} className="flex items-center">
                       <Check size={16} className="text-green-500 mr-2" />
                       <span className="text-gray-700">{feature}</span>
@@ -270,11 +268,11 @@ export default function PropertyDetailPage() {
       </div>
 
       {/* Similar properties */}
-      {similarProperties.length > 0 && (
+      {!isLoadingSimilar && similarProperties.length > 0 && (
         <div className="mt-12">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6">Similar Properties</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {similarProperties.map((property) => (
+            {similarProperties.map((property: Property) => (
               <PropertyCard key={property._id} property={property} />
             ))}
           </div>

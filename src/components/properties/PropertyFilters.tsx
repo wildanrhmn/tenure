@@ -1,233 +1,210 @@
-import { useState } from 'react';
-import { ChevronDown, ChevronUp, X } from 'lucide-react';
+"use client"
+
+import { useState } from "react"
+import { X } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Separator } from "@/components/ui/separator"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
 interface FilterProps {
   initialFilters: {
-    type: string;
-    status: string;
-    minPrice: string;
-    maxPrice: string;
-    minBedrooms: string;
-    minBathrooms: string;
-    city: string;
-    state: string;
-    sort?: string;
-    order?: string;
-  };
-  onFilterChange: (filters: any) => void;
+    type: string
+    status: string
+    minPrice: string
+    maxPrice: string
+    minBedrooms: string
+    minBathrooms: string
+    city: string
+    state: string
+    sort?: string
+    order?: string
+  }
+  onFilterChange: (filters: any) => void
 }
 
 export default function PropertyFilters({ initialFilters, onFilterChange }: FilterProps) {
-  const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState(initialFilters);
+  const [filters, setFilters] = useState(initialFilters)
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFilters((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const toggleFilters = () => {
-    setShowFilters(!showFilters);
-  };
+  const handleInputChange = (name: string, value: string) => {
+    setFilters((prev) => ({ ...prev, [name]: value }))
+  }
 
   const applyFilters = () => {
-    onFilterChange(filters);
-  };
+    onFilterChange(filters)
+  }
 
   const resetFilters = () => {
     const resetValues = {
-      type: '',
-      status: '',
-      minPrice: '',
-      maxPrice: '',
-      minBedrooms: '',
-      minBathrooms: '',
-      city: '',
-      state: ''
-    };
-    setFilters(resetValues);
-    onFilterChange(resetValues);
-  };
-
-  const hasActiveFilters = () => {
-    return Object.entries(filters).some(([key, value]) => {
-      if (key === 'sort' || key === 'order') return false;
-      return !!value;
-    });
-  };
+      type: "",
+      status: "",
+      minPrice: "",
+      maxPrice: "",
+      minBedrooms: "",
+      minBathrooms: "",
+      city: "",
+      state: "",
+    }
+    setFilters(resetValues)
+    onFilterChange(resetValues)
+  }
 
   return (
-    <div className="bg-white border rounded-lg p-4">
-      <div className="flex justify-between items-center">
-        <button
-          onClick={toggleFilters}
-          className="flex items-center text-gray-700 font-medium"
-        >
-          <span>Filters</span>
-          {showFilters ? (
-            <ChevronUp className="ml-1" size={16} />
-          ) : (
-            <ChevronDown className="ml-1" size={16} />
-          )}
-        </button>
-        
-        {hasActiveFilters() && (
-          <button
-            onClick={resetFilters}
-            className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
-          >
-            <X size={14} className="mr-1" />
-            Clear filters
-          </button>
-        )}
-      </div>
-      
-      {showFilters && (
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Property Type */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Property Type
-            </label>
-            <select
-              name="type"
-              value={filters.type}
-              onChange={handleInputChange}
-              className="w-full border rounded-md p-2 bg-white text-sm"
-            >
-              <option value="">Any Type</option>
-              <option value="house">House</option>
-              <option value="apartment">Apartment</option>
-              <option value="condo">Condo</option>
-              <option value="townhouse">Townhouse</option>
-              <option value="land">Land</option>
-              <option value="commercial">Commercial</option>
-            </select>
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="space-y-6">
+        {/* Property Type & Status Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="type" className="text-sm font-medium text-gray-700">Property Type</Label>
+            <Select value={filters.type} onValueChange={(value) => handleInputChange("type", value)}>
+              <SelectTrigger id="type" className="w-full border border-gray-200 hover:border-gray-300 transition-colors">
+                <SelectValue placeholder="Any Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="any">Any Type</SelectItem>
+                <SelectItem value="house">House</SelectItem>
+                <SelectItem value="apartment">Apartment</SelectItem>
+                <SelectItem value="condo">Condo</SelectItem>
+                <SelectItem value="townhouse">Townhouse</SelectItem>
+                <SelectItem value="land">Land</SelectItem>
+                <SelectItem value="commercial">Commercial</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          
-          {/* Status */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Status
-            </label>
-            <select
-              name="status"
-              value={filters.status}
-              onChange={handleInputChange}
-              className="w-full border rounded-md p-2 bg-white text-sm"
-            >
-              <option value="">Any Status</option>
-              <option value="for-sale">For Sale</option>
-              <option value="for-rent">For Rent</option>
-              <option value="pending">Pending</option>
-            </select>
+
+          <div className="space-y-2">
+            <Label htmlFor="status" className="text-sm font-medium text-gray-700">Status</Label>
+            <Select value={filters.status} onValueChange={(value) => handleInputChange("status", value)}>
+              <SelectTrigger id="status" className="w-full border border-gray-200 hover:border-gray-300 transition-colors">
+                <SelectValue placeholder="Any Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="any">Any Status</SelectItem>
+                <SelectItem value="for-sale">For Sale</SelectItem>
+                <SelectItem value="for-rent">For Rent</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          
-          {/* Price Range */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Price Range
-            </label>
-            <div className="flex space-x-2">
-              <input
+        </div>
+
+        {/* Price Range Section */}
+        <div className="space-y-2">
+          <Label className="text-sm font-medium text-gray-700">Price Range</Label>
+          <div className="flex items-center space-x-3">
+            <div className="relative flex-1">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+              <Input
                 type="number"
-                name="minPrice"
-                value={filters.minPrice}
-                onChange={handleInputChange}
                 placeholder="Min"
-                className="w-1/2 border rounded-md p-2 text-sm"
+                value={filters.minPrice}
+                onChange={(e) => handleInputChange("minPrice", e.target.value)}
+                className="pl-7 border border-gray-200 hover:border-gray-300 transition-colors"
               />
-              <input
+            </div>
+            <span className="text-gray-400">—</span>
+            <div className="relative flex-1">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+              <Input
                 type="number"
-                name="maxPrice"
-                value={filters.maxPrice}
-                onChange={handleInputChange}
                 placeholder="Max"
-                className="w-1/2 border rounded-md p-2 text-sm"
+                value={filters.maxPrice}
+                onChange={(e) => handleInputChange("maxPrice", e.target.value)}
+                className="pl-7 border border-gray-200 hover:border-gray-300 transition-colors"
               />
             </div>
           </div>
-          
-          {/* Bedrooms */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Bedrooms
-            </label>
-            <select
-              name="minBedrooms"
-              value={filters.minBedrooms}
-              onChange={handleInputChange}
-              className="w-full border rounded-md p-2 bg-white text-sm"
-            >
-              <option value="">Any</option>
-              <option value="1">1+</option>
-              <option value="2">2+</option>
-              <option value="3">3+</option>
-              <option value="4">4+</option>
-              <option value="5">5+</option>
-            </select>
+        </div>
+
+        {/* Bedrooms & Bathrooms Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="minBedrooms" className="text-sm font-medium text-gray-700">Bedrooms</Label>
+            <Select value={filters.minBedrooms} onValueChange={(value) => handleInputChange("minBedrooms", value)}>
+              <SelectTrigger id="minBedrooms" className="w-full border border-gray-200 hover:border-gray-300 transition-colors">
+                <SelectValue placeholder="Any" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="any">Any</SelectItem>
+                <SelectItem value="1">1+ Bed</SelectItem>
+                <SelectItem value="2">2+ Beds</SelectItem>
+                <SelectItem value="3">3+ Beds</SelectItem>
+                <SelectItem value="4">4+ Beds</SelectItem>
+                <SelectItem value="5">5+ Beds</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          
-          {/* Bathrooms */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Bathrooms
-            </label>
-            <select
-              name="minBathrooms"
-              value={filters.minBathrooms}
-              onChange={handleInputChange}
-              className="w-full border rounded-md p-2 bg-white text-sm"
-            >
-              <option value="">Any</option>
-              <option value="1">1+</option>
-              <option value="2">2+</option>
-              <option value="3">3+</option>
-              <option value="4">4+</option>
-            </select>
-          </div>
-          
-          {/* City */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              City
-            </label>
-            <input
-              type="text"
-              name="city"
-              value={filters.city}
-              onChange={handleInputChange}
-              placeholder="Enter city"
-              className="w-full border rounded-md p-2 text-sm"
-            />
-          </div>
-          
-          {/* State/Province */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              State
-            </label>
-            <input
-              type="text"
-              name="state"
-              value={filters.state}
-              onChange={handleInputChange}
-              placeholder="Enter state"
-              className="w-full border rounded-md p-2 text-sm"
-            />
-          </div>
-          
-          {/* Apply Button */}
-          <div className="flex items-end">
-            <button
-              onClick={applyFilters}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md"
-            >
-              Apply Filters
-            </button>
+
+          <div className="space-y-2">
+            <Label htmlFor="minBathrooms" className="text-sm font-medium text-gray-700">Bathrooms</Label>
+            <Select value={filters.minBathrooms} onValueChange={(value) => handleInputChange("minBathrooms", value)}>
+              <SelectTrigger id="minBathrooms" className="w-full border border-gray-200 hover:border-gray-300 transition-colors">
+                <SelectValue placeholder="Any" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="any">Any</SelectItem>
+                <SelectItem value="1">1+ Bath</SelectItem>
+                <SelectItem value="2">2+ Baths</SelectItem>
+                <SelectItem value="3">3+ Baths</SelectItem>
+                <SelectItem value="4">4+ Baths</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
-      )}
+
+        {/* Location Section */}
+        <Accordion type="single" collapsible className="w-full border rounded-lg">
+          <AccordionItem value="location" className="border-none">
+            <AccordionTrigger className="px-4 py-3 hover:bg-gray-50 transition-colors">Location</AccordionTrigger>
+            <AccordionContent className="px-4 pb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="city" className="text-sm font-medium text-gray-700">City</Label>
+                  <Input
+                    id="city"
+                    placeholder="Enter city"
+                    value={filters.city}
+                    onChange={(e) => handleInputChange("city", e.target.value)}
+                    className="border border-gray-200 hover:border-gray-300 transition-colors"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="state" className="text-sm font-medium text-gray-700">State</Label>
+                  <Input
+                    id="state"
+                    placeholder="Enter state"
+                    value={filters.state}
+                    onChange={(e) => handleInputChange("state", e.target.value)}
+                    className="border border-gray-200 hover:border-gray-300 transition-colors"
+                  />
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+
+        <Separator className="my-6" />
+
+        {/* Action Buttons */}
+        <div className="flex justify-between gap-4">
+          <Button 
+            variant="outline" 
+            onClick={resetFilters} 
+            className="flex items-center gap-2 hover:bg-gray-50 transition-colors"
+          >
+            <X size={16} />
+            Reset Filters
+          </Button>
+          <Button 
+            onClick={applyFilters} 
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 transition-colors"
+          >
+            Apply Filters
+          </Button>
+        </div>
+      </div>
     </div>
-  );
+  )
 }

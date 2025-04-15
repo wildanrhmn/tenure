@@ -38,6 +38,7 @@ export interface Property {
     parkingSpaces?: number;
     createdAt: string;
     updatedAt?: string;
+    isSaved: boolean;
   }
   
   export interface PropertyFilters {

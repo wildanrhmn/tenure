@@ -1,116 +1,227 @@
-import Link from 'next/link';
-import Image from 'next/image';
-import { Heart } from 'lucide-react';
-import { formatCurrency } from '@/utils/formatters';
-import { Property } from '@/types/property';
-import { useState } from 'react';
-import { saveProperty, unsaveProperty } from '@/services/propertyService';
-import { useAuth } from '@/hooks/useAuth';
+"use client"
+
+import type React from "react"
+
+import Link from "next/link"
+import Image from "next/image"
+import { Heart, Bed, Bath, SquareIcon as SquareFeet, MapPin } from "lucide-react"
+import { formatCurrency } from "@/utils/formatters"
+import type { Property } from "@/types/property"
+import { usePropertyActions } from "@/hooks/usePropertyActions"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 
 interface PropertyCardProps {
-  property: Property;
+  property: Property
+  view?: string
 }
 
-export default function PropertyCard({ property }: PropertyCardProps) {
-  const { user, isAuthenticated } = useAuth();
-  const [isSaved, setIsSaved] = useState(
-    user?.savedProperties?.includes(property._id) || false
-  );
-  const [saving, setSaving] = useState(false);
+export default function PropertyCard({ property, view = "grid" }: PropertyCardProps) {
+  const { saveProperty, unsaveProperty, isSaving, isUnsaving } = usePropertyActions()
 
-  const handleSaveProperty = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (!isAuthenticated) {
-      // Redirect to login or show login modal
-      return;
+  const handleSaveClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (property.isSaved) {
+      unsaveProperty(property._id)
+    } else {
+      saveProperty(property._id)
     }
-    
-    setSaving(true);
-    try {
-      if (isSaved) {
-        await unsaveProperty(property._id);
-        setIsSaved(false);
-      } else {
-        await saveProperty(property._id);
-        setIsSaved(true);
-      }
-    } catch (error) {
-      console.error('Error saving property:', error);
-    } finally {
-      setSaving(false);
-    }
-  };
+  }
 
   // Get primary image or use placeholder
-  const primaryImage = property.images?.length
-    ? property.images[0].url
-    : '/images/property-placeholder.jpg';
+  const primaryImage = property.images?.length ? property.images[0].url : "/images/property-placeholder.jpg"
 
   // Format property status for display
   const statusDisplay = {
-    'for-sale': 'For Sale',
-    'for-rent': 'For Rent',
-    'sold': 'Sold',
-    'rented': 'Rented',
-    'pending': 'Pending'
-  };
+    "for-sale": "For Sale",
+    "for-rent": "For Rent",
+    approved: "Approved",
+    sold: "Sold",
+    rented: "Rented",
+    pending: "Pending",
+  }
+
+  // Status badge color
+  const statusColor = {
+    "for-sale": "bg-emerald-100 text-emerald-800 border-emerald-200",
+    "for-rent": "bg-blue-100 text-blue-800 border-blue-200",
+    approved: "bg-green-100 text-green-800 border-green-200",
+    sold: "bg-purple-100 text-purple-800 border-purple-200",
+    rented: "bg-indigo-100 text-indigo-800 border-indigo-200",
+    pending: "bg-amber-100 text-amber-800 border-amber-200",
+  }
+
+  if (view === "list") {
+    return (
+      <Card className="overflow-hidden transition-all hover:shadow-md py-0">
+        <Link href={`/properties/${property._id}`} className="flex flex-col md:flex-row">
+          <div className="relative h-48 md:h-[240px] md:w-1/3 md:min-w-[240px]">
+            <Image
+              src={primaryImage || "/placeholder.svg"}
+              alt={property.title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 240px"
+              style={{aspectRatio: "4/3", objectFit: "cover"}}
+            />
+            <Badge
+              variant="outline"
+              className={cn(
+                "absolute top-2 left-2 font-medium",
+                statusColor[property.status] || "bg-gray-100 text-gray-800",
+              )}
+            >
+              {statusDisplay[property.status] || property.status}
+            </Badge>
+
+            <Button
+              onClick={handleSaveClick}
+              className={`absolute top-2 right-2 h-8 w-8 rounded-full p-0 ${
+                property.isSaved ? "bg-red-500 text-white hover:bg-red-600" : "bg-white/90 text-gray-600 hover:bg-white"
+              }`}
+              disabled={isSaving || isUnsaving}
+              aria-label={property.isSaved ? "Unsave property" : "Save property"}
+              size="icon"
+              variant="ghost"
+            >
+              <Heart
+                className={`h-4 w-4 ${property.isSaved ? "text-white" : "text-gray-500"}`}
+                fill={property.isSaved ? "currentColor" : "none"}
+              />
+            </Button>
+          </div>
+
+          <CardContent className="p-4 md:p-6 flex-1">
+            <div className="flex flex-col h-full">
+              <div className="mb-auto">
+                <div className="flex justify-between items-start gap-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800">{property.title}</h3>
+                    <p className="text-muted-foreground text-sm mt-1 flex items-center">
+                      <MapPin className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                      {property.address.street}, {property.address.city}, {property.address.state}
+                    </p>
+                  </div>
+                  <p className="text-xl font-bold text-emerald-600 whitespace-nowrap">
+                    {formatCurrency(property.price)}
+                    {property.status === "for-rent" && (
+                      <span className="text-sm font-normal text-muted-foreground">/mo</span>
+                    )}
+                  </p>
+                </div>
+
+                <p className="text-muted-foreground mt-3 line-clamp-2">
+                  {property.description ||
+                    "Beautiful property in a prime location with amazing amenities and features."}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-4 mt-4 text-sm">
+                <div className="flex items-center text-muted-foreground">
+                  <Bed className="h-4 w-4 mr-1.5" />
+                  <span>
+                    {property.bedrooms} {property.bedrooms === 1 ? "Bed" : "Beds"}
+                  </span>
+                </div>
+                <div className="flex items-center text-muted-foreground">
+                  <Bath className="h-4 w-4 mr-1.5" />
+                  <span>
+                    {property.bathrooms} {property.bathrooms === 1 ? "Bath" : "Baths"}
+                  </span>
+                </div>
+                <div className="flex items-center text-muted-foreground">
+                  <SquareFeet className="h-4 w-4 mr-1.5" />
+                  <span>
+                    {property.area} {property.areaUnit}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Link>
+      </Card>
+    )
+  }
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:transform hover:scale-[1.02] hover:shadow-lg">
+    <Card className="overflow-hidden transition-all py-0">
       <Link href={`/properties/${property._id}`}>
-        <div className="relative h-48 w-full">
+        <div className="relative h-56 w-full">
           <Image
-            src={primaryImage}
+            src={primaryImage || "/placeholder.svg"}
             alt={property.title}
             fill
-            className="object-cover"
+            className="object-cover w-full h-full brightness-[0.98]"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            style={{objectFit: "cover", aspectRatio: "16/9"}}
+            priority
           />
-          <div className="absolute top-0 left-0 m-2 px-2 py-1 text-xs font-semibold text-white bg-blue-600 rounded">
-            {statusDisplay[property.status] || property.status}
-          </div>
-          
-          <button
-            onClick={handleSaveProperty}
-            disabled={saving}
-            className={`absolute top-0 right-0 m-2 p-2 rounded-full ${
-              isSaved ? 'bg-red-500 text-white' : 'bg-white text-gray-600'
-            }`}
-            aria-label={isSaved ? 'Unsave property' : 'Save property'}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+          <Badge
+            variant="outline"
+            className={cn(
+              "absolute top-3 left-3 font-medium shadow-sm backdrop-blur-[2px]",
+              statusColor[property.status] || "bg-gray-100 text-gray-800",
+            )}
           >
-            <Heart size={18} className={isSaved ? 'fill-current' : ''} />
-          </button>
+            {statusDisplay[property.status] || property.status}
+          </Badge>
+
+          <Button
+            onClick={handleSaveClick}
+            className={`absolute top-3 right-3 h-9 w-9 rounded-full p-0 shadow-sm backdrop-blur-[2px] transition-all duration-200 ${
+              property.isSaved ? "bg-red-500 text-white hover:bg-red-600" : "bg-white/90 text-gray-600 hover:bg-white hover:scale-110"
+            }`}
+            disabled={isSaving || isUnsaving}
+            aria-label={property.isSaved ? "Unsave property" : "Save property"}
+            size="icon"
+            variant="ghost"
+          >
+            <Heart
+              className={`h-4.5 w-4.5 ${property.isSaved ? "text-white" : "text-gray-500"}`}
+              fill={property.isSaved ? "currentColor" : "none"}
+            />
+          </Button>
         </div>
-        
-        <div className="p-4">
-          <div className="flex justify-between items-start">
-            <h3 className="text-lg font-semibold text-gray-800 line-clamp-1">
+
+        <CardContent className="p-5">
+          <div className="flex justify-between items-start gap-3">
+            <h3 className="text-lg font-semibold text-gray-800 line-clamp-1 hover:text-emerald-600 transition-colors">
               {property.title}
             </h3>
-            <p className="text-xl font-bold text-blue-600">
+            <p className="text-lg font-bold text-emerald-600 whitespace-nowrap">
               {formatCurrency(property.price)}
+              {property.status === "for-rent" && <span className="text-xs font-normal text-muted-foreground">/mo</span>}
             </p>
           </div>
-          
-          <p className="text-gray-600 text-sm mt-1 line-clamp-1">
-            {property.address.street}, {property.address.city}, {property.address.state}
+
+          <p className="text-muted-foreground text-sm mt-2 flex items-center">
+            <MapPin className="h-3.5 w-3.5 mr-1.5 text-emerald-500" />
+            <span className="line-clamp-1 hover:text-emerald-600 transition-colors">
+              {property.address.street}, {property.address.city}, {property.address.state}
+            </span>
           </p>
-          
-          <div className="flex justify-between mt-4">
-            <div className="flex items-center text-gray-700">
-              <span className="text-sm">{property.bedrooms} Beds</span>
+
+          <div className="flex justify-between mt-5 text-sm bg-gray-50 rounded-xl p-3">
+            <div className="flex items-center text-gray-600 hover:text-emerald-600 transition-colors">
+              <Bed className="h-4 w-4 mr-1.5" />
+              <span>{property.bedrooms}</span>
             </div>
-            <div className="flex items-center text-gray-700">
-              <span className="text-sm">{property.bathrooms} Baths</span>
+            <div className="flex items-center text-gray-600 hover:text-emerald-600 transition-colors">
+              <Bath className="h-4 w-4 mr-1.5" />
+              <span>{property.bathrooms}</span>
             </div>
-            <div className="flex items-center text-gray-700">
-              <span className="text-sm">{property.area} {property.areaUnit}</span>
+            <div className="flex items-center text-gray-600 hover:text-emerald-600 transition-colors">
+              <SquareFeet className="h-4 w-4 mr-1.5" />
+              <span>
+                {property.area} {property.areaUnit}
+              </span>
             </div>
           </div>
-        </div>
+        </CardContent>
       </Link>
-    </div>
-  );
+    </Card>
+  )
 }
