@@ -42,8 +42,9 @@ export default function PropertiesPage() {
   // Get query params
   const page = searchParams.get("page") || "1"
   const search = searchParams.get("search") || ""
-  const type = searchParams.get("type") || ""
-  const status = searchParams.get("status") || ""
+  const type = searchParams.get("type") || "all"
+  const listingStatus = searchParams.get("listingStatus") || ""
+  const adminStatus = searchParams.get("adminStatus") || ""
   const minPrice = searchParams.get("minPrice") || ""
   const maxPrice = searchParams.get("maxPrice") || ""
   const minBedrooms = searchParams.get("minBedrooms") || ""
@@ -60,7 +61,8 @@ export default function PropertiesPage() {
     limit: "9",
     search,
     type,
-    status,
+    listingStatus,
+    adminStatus,
     minPrice,
     maxPrice,
     minBedrooms,
@@ -87,7 +89,7 @@ export default function PropertiesPage() {
 
     // Update or remove filters
     Object.entries(filters).forEach(([key, value]) => {
-      if (value) {
+      if (value && value !== "all") {
         params.set(key, value)
       } else {
         params.delete(key)
@@ -123,7 +125,7 @@ export default function PropertiesPage() {
   const totalProperties = data?.total ?? 0
 
   // Count active filters
-  const activeFiltersCount = [type, status, minPrice, maxPrice, minBedrooms, minBathrooms, city, state].filter(
+  const activeFiltersCount = [type, listingStatus, adminStatus, minPrice, maxPrice, minBedrooms, minBathrooms, city, state].filter(
     Boolean,
   ).length
 
@@ -188,7 +190,8 @@ export default function PropertiesPage() {
                     <PropertyFilters
                       initialFilters={{
                         type,
-                        status,
+                        listingStatus,
+                        adminStatus,
                         minPrice,
                         maxPrice,
                         minBedrooms,
@@ -214,7 +217,8 @@ export default function PropertiesPage() {
                   onClick={() =>
                     handleFilterChange({
                       type: "",
-                      status: "",
+                      listingStatus: "",
+                      adminStatus: "",
                       minPrice: "",
                       maxPrice: "",
                       minBedrooms: "",
@@ -325,7 +329,8 @@ export default function PropertiesPage() {
               onClick={() =>
                 handleFilterChange({
                   type: "",
-                  status: "",
+                  listingStatus: "",
+                  adminStatus: "",
                   minPrice: "",
                   maxPrice: "",
                   minBedrooms: "",

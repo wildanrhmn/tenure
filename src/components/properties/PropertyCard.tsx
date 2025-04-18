@@ -41,6 +41,8 @@ export default function PropertyCard({ property, view = "grid" }: PropertyCardPr
     sold: "Sold",
     rented: "Rented",
     pending: "Pending",
+    rejected: "Rejected",
+    revision_requested: "Revision Requested",
   }
 
   // Status badge color
@@ -51,6 +53,8 @@ export default function PropertyCard({ property, view = "grid" }: PropertyCardPr
     sold: "bg-purple-100 text-purple-800 border-purple-200",
     rented: "bg-indigo-100 text-indigo-800 border-indigo-200",
     pending: "bg-amber-100 text-amber-800 border-amber-200",
+    rejected: "bg-red-100 text-red-800 border-red-200",
+    revision_requested: "bg-orange-100 text-orange-800 border-orange-200",
   }
 
   if (view === "list") {
@@ -70,10 +74,10 @@ export default function PropertyCard({ property, view = "grid" }: PropertyCardPr
               variant="outline"
               className={cn(
                 "absolute top-2 left-2 font-medium",
-                statusColor[property.status] || "bg-gray-100 text-gray-800",
+                statusColor[property.listingStatus] || "bg-gray-100 text-gray-800",
               )}
             >
-              {statusDisplay[property.status] || property.status}
+              {statusDisplay[property.listingStatus] || property.listingStatus}
             </Badge>
 
             <Button
@@ -106,7 +110,7 @@ export default function PropertyCard({ property, view = "grid" }: PropertyCardPr
                   </div>
                   <p className="text-xl font-bold text-emerald-600 whitespace-nowrap">
                     {formatCurrency(property.price)}
-                    {property.status === "for-rent" && (
+                    {property.listingStatus === "for-rent" && (
                       <span className="text-sm font-normal text-muted-foreground">/mo</span>
                     )}
                   </p>
@@ -163,10 +167,10 @@ export default function PropertyCard({ property, view = "grid" }: PropertyCardPr
             variant="outline"
             className={cn(
               "absolute top-3 left-3 font-medium shadow-sm backdrop-blur-[2px]",
-              statusColor[property.status] || "bg-gray-100 text-gray-800",
+              statusColor[property.listingStatus] || "bg-gray-100 text-gray-800",
             )}
           >
-            {statusDisplay[property.status] || property.status}
+            {statusDisplay[property.listingStatus] || property.listingStatus}
           </Badge>
 
           <Button
@@ -193,7 +197,9 @@ export default function PropertyCard({ property, view = "grid" }: PropertyCardPr
             </h3>
             <p className="text-lg font-bold text-emerald-600 whitespace-nowrap">
               {formatCurrency(property.price)}
-              {property.status === "for-rent" && <span className="text-xs font-normal text-muted-foreground">/mo</span>}
+              {property.listingStatus === "for-rent" && (
+                <span className="text-xs font-normal text-muted-foreground">/mo</span>
+              )}
             </p>
           </div>
 

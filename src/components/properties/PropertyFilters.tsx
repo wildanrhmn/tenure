@@ -12,7 +12,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 interface FilterProps {
   initialFilters: {
     type: string
-    status: string
+    listingStatus: string
+    adminStatus: string
     minPrice: string
     maxPrice: string
     minBedrooms: string
@@ -26,7 +27,15 @@ interface FilterProps {
 }
 
 export default function PropertyFilters({ initialFilters, onFilterChange }: FilterProps) {
-  const [filters, setFilters] = useState(initialFilters)
+  // Convert empty strings to "all" for the initial state
+  const initialFiltersWithDefaults = {
+    ...initialFilters,
+    type: initialFilters.type || "all",
+    listingStatus: initialFilters.listingStatus || "all",
+    adminStatus: initialFilters.adminStatus || "all",
+  };
+  
+  const [filters, setFilters] = useState(initialFiltersWithDefaults)
 
   const handleInputChange = (name: string, value: string) => {
     setFilters((prev) => ({ ...prev, [name]: value }))
@@ -38,8 +47,9 @@ export default function PropertyFilters({ initialFilters, onFilterChange }: Filt
 
   const resetFilters = () => {
     const resetValues = {
-      type: "",
-      status: "",
+      type: "all",
+      listingStatus: "all",
+      adminStatus: "all",
       minPrice: "",
       maxPrice: "",
       minBedrooms: "",
@@ -63,7 +73,7 @@ export default function PropertyFilters({ initialFilters, onFilterChange }: Filt
                 <SelectValue placeholder="Any Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="any">Any Type</SelectItem>
+                <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="house">House</SelectItem>
                 <SelectItem value="apartment">Apartment</SelectItem>
                 <SelectItem value="condo">Condo</SelectItem>
@@ -75,16 +85,39 @@ export default function PropertyFilters({ initialFilters, onFilterChange }: Filt
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="status" className="text-sm font-medium text-gray-700">Status</Label>
-            <Select value={filters.status} onValueChange={(value) => handleInputChange("status", value)}>
-              <SelectTrigger id="status" className="w-full border border-gray-200 hover:border-gray-300 transition-colors">
-                <SelectValue placeholder="Any Status" />
+            <Label htmlFor="listingStatus">Listing Status</Label>
+            <Select
+              value={filters.listingStatus}
+              onValueChange={(value) => handleInputChange("listingStatus", value)}
+            >
+              <SelectTrigger id="listingStatus">
+                <SelectValue placeholder="Select listing status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="any">Any Status</SelectItem>
+                <SelectItem value="all">All (For Sale & For Rent)</SelectItem>
                 <SelectItem value="for-sale">For Sale</SelectItem>
                 <SelectItem value="for-rent">For Rent</SelectItem>
+                <SelectItem value="sold">Sold</SelectItem>
+                <SelectItem value="rented">Rented</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="adminStatus">Admin Status</Label>
+            <Select
+              value={filters.adminStatus}
+              onValueChange={(value) => handleInputChange("adminStatus", value)}
+            >
+              <SelectTrigger id="adminStatus">
+                <SelectValue placeholder="Select admin status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All (Approved)</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+                <SelectItem value="revision_requested">Revision Requested</SelectItem>
               </SelectContent>
             </Select>
           </div>

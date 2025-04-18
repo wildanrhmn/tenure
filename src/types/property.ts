@@ -3,7 +3,8 @@ export interface Property {
     title: string;
     description: string;
     type: 'house' | 'apartment' | 'condo' | 'townhouse' | 'land' | 'commercial' | 'other';
-    status: 'for-sale' | 'for-rent' | 'sold' | 'rented' | 'pending';
+    listingStatus: 'for-sale' | 'for-rent' | 'sold' | 'rented';
+    adminStatus: 'pending' | 'approved' | 'rejected' | 'revision_requested';
     price: number;
     area: number;
     areaUnit: 'sqft' | 'sqm';
@@ -39,6 +40,19 @@ export interface Property {
     createdAt: string;
     updatedAt?: string;
     isSaved: boolean;
+    isPublished: boolean;
+    isApproved: boolean;
+    approvalDate?: string;
+    rejectionReason?: string;
+    rejectedAt?: string;
+    revisionHistory?: {
+      reason: string;
+      requestedAt: string;
+      resolvedAt?: string;
+      resolvedBy?: string;
+    }[];
+    lastRevisionRequest?: string;
+    revisionCount?: number;
   }
   
   export interface PropertyFilters {
@@ -46,7 +60,8 @@ export interface Property {
     limit?: string | number;
     search?: string;
     type?: string;
-    status?: string;
+    listingStatus?: string;
+    adminStatus?: string;
     minPrice?: string | number;
     maxPrice?: string | number;
     minBedrooms?: string | number;

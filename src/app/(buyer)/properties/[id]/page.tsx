@@ -34,6 +34,30 @@ export default function PropertyDetailPage() {
     enabled: !!id
   });
 
+  // Format property status for display
+  const statusDisplay: Record<string, string> = {
+    "for-sale": "For Sale",
+    "for-rent": "For Rent",
+    approved: "Approved",
+    sold: "Sold",
+    rented: "Rented",
+    pending: "Pending",
+    rejected: "Rejected",
+    revision_requested: "Revision Requested",
+  };
+
+  // Status badge color
+  const statusColor: Record<string, string> = {
+    "for-sale": "bg-emerald-100 text-emerald-800 border-emerald-200",
+    "for-rent": "bg-blue-100 text-blue-800 border-blue-200",
+    approved: "bg-green-100 text-green-800 border-green-200",
+    sold: "bg-purple-100 text-purple-800 border-purple-200",
+    rented: "bg-indigo-100 text-indigo-800 border-indigo-200",
+    pending: "bg-amber-100 text-amber-800 border-amber-200",
+    rejected: "bg-red-100 text-red-800 border-red-200",
+    revision_requested: "bg-orange-100 text-orange-800 border-orange-200",
+  };
+
   if (isLoadingProperty) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -73,12 +97,12 @@ export default function PropertyDetailPage() {
           </p>
         </div>
         <div className="mt-4 md:mt-0">
-          <span className="inline-block px-3 py-1 text-sm font-semibold rounded-full mr-2 
-            bg-blue-100 text-blue-800">
-            {property.status === 'for-sale' ? 'For Sale' : property.status === 'for-rent' ? 'For Rent' : property.status}
+          <span className={`inline-block px-3 py-1 text-sm font-semibold rounded-full mr-2 ${statusColor[property.listingStatus] || "bg-gray-100 text-gray-800"}`}>
+            {statusDisplay[property.listingStatus] || property.listingStatus}
           </span>
-          <div className="text-3xl font-bold text-blue-600 mt-2">
+          <div className="text-3xl font-bold text-[#2A623D] mt-2">
             {formatCurrency(property.price)}
+            {property.listingStatus === "for-rent" && <span className="text-sm font-normal text-muted-foreground">/mo</span>}
           </div>
         </div>
       </div>
@@ -108,7 +132,7 @@ export default function PropertyDetailPage() {
               <div
                 key={index}
                 className={`cursor-pointer flex-shrink-0 h-20 w-32 relative rounded-md overflow-hidden
-                  ${activeImage === index ? 'ring-2 ring-blue-600' : ''}`}
+                  ${activeImage === index ? 'ring-2 ring-[#2A623D]' : ''}`}
                 onClick={() => setActiveImage(index)}
               >
                 <Image
@@ -134,22 +158,22 @@ export default function PropertyDetailPage() {
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <div className="flex flex-col items-center p-4 bg-gray-50 rounded-lg">
-                <Bed size={24} className="text-blue-600 mb-2" />
+                <Bed size={24} className="text-[#2A623D] mb-2" />
                 <span className="text-lg font-semibold">{property.bedrooms}</span>
                 <span className="text-sm text-gray-500">Bedrooms</span>
               </div>
               <div className="flex flex-col items-center p-4 bg-gray-50 rounded-lg">
-                <Bath size={24} className="text-blue-600 mb-2" />
+                <Bath size={24} className="text-[#2A623D] mb-2" />
                 <span className="text-lg font-semibold">{property.bathrooms}</span>
                 <span className="text-sm text-gray-500">Bathrooms</span>
               </div>
               <div className="flex flex-col items-center p-4 bg-gray-50 rounded-lg">
-                <Grid size={24} className="text-blue-600 mb-2" />
+                <Grid size={24} className="text-[#2A623D] mb-2" />
                 <span className="text-lg font-semibold">{property.area}</span>
                 <span className="text-sm text-gray-500">{property.areaUnit}</span>
               </div>
               <div className="flex flex-col items-center p-4 bg-gray-50 rounded-lg">
-                <Calendar size={24} className="text-blue-600 mb-2" />
+                <Calendar size={24} className="text-[#2A623D] mb-2" />
                 <span className="text-lg font-semibold">{property.yearBuilt || 'N/A'}</span>
                 <span className="text-sm text-gray-500">Year Built</span>
               </div>
@@ -214,7 +238,7 @@ export default function PropertyDetailPage() {
               </div>
             </div>
             <div className="space-y-3">
-              <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">
+              <button className="w-full bg-gradient-to-r from-[#2A623D] to-[#1A365D] text-white py-2 px-6 rounded-xl hover:opacity-90 transition-all duration-300 shadow-md">
                 Contact Agent
               </button>
               <button className="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-50 flex items-center justify-center">
@@ -241,9 +265,15 @@ export default function PropertyDetailPage() {
                 <span className="font-medium text-gray-800 capitalize">{property.type}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Status</span>
+                <span className="text-gray-600">Listing Status</span>
                 <span className="font-medium text-gray-800 capitalize">
-                  {property.status.replace('-', ' ')}
+                  {property.listingStatus.replace('-', ' ')}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Admin Status</span>
+                <span className="font-medium text-gray-800 capitalize">
+                  {property.listingStatus.replace('-', ' ')}
                 </span>
               </div>
               {property.yearBuilt && (

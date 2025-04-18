@@ -8,7 +8,7 @@ export const fetchProperties = async (params: PropertyFilters) => {
   
   // Add all non-empty params to the query string
   Object.entries(params).forEach(([key, value]) => {
-    if (value) {
+    if (value && value !== "all") {
       queryParams.append(key, value.toString());
     }
   });
