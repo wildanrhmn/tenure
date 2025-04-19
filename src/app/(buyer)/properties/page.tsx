@@ -191,7 +191,6 @@ export default function PropertiesPage() {
                       initialFilters={{
                         type,
                         listingStatus,
-                        adminStatus,
                         minPrice,
                         maxPrice,
                         minBedrooms,

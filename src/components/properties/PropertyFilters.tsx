@@ -13,7 +13,6 @@ interface FilterProps {
   initialFilters: {
     type: string
     listingStatus: string
-    adminStatus: string
     minPrice: string
     maxPrice: string
     minBedrooms: string
@@ -32,7 +31,6 @@ export default function PropertyFilters({ initialFilters, onFilterChange }: Filt
     ...initialFilters,
     type: initialFilters.type || "all",
     listingStatus: initialFilters.listingStatus || "all",
-    adminStatus: initialFilters.adminStatus || "all",
   };
   
   const [filters, setFilters] = useState(initialFiltersWithDefaults)
@@ -49,7 +47,6 @@ export default function PropertyFilters({ initialFilters, onFilterChange }: Filt
     const resetValues = {
       type: "all",
       listingStatus: "all",
-      adminStatus: "all",
       minPrice: "",
       maxPrice: "",
       minBedrooms: "",
@@ -85,12 +82,12 @@ export default function PropertyFilters({ initialFilters, onFilterChange }: Filt
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="listingStatus">Listing Status</Label>
+            <Label htmlFor="listingStatus" className="text-sm font-medium text-gray-700">Listing Status</Label>
             <Select
               value={filters.listingStatus}
               onValueChange={(value) => handleInputChange("listingStatus", value)}
             >
-              <SelectTrigger id="listingStatus">
+              <SelectTrigger id="listingStatus" className="w-full border border-gray-200 hover:border-gray-300 transition-colors">
                 <SelectValue placeholder="Select listing status" />
               </SelectTrigger>
               <SelectContent>
@@ -99,25 +96,6 @@ export default function PropertyFilters({ initialFilters, onFilterChange }: Filt
                 <SelectItem value="for-rent">For Rent</SelectItem>
                 <SelectItem value="sold">Sold</SelectItem>
                 <SelectItem value="rented">Rented</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="adminStatus">Admin Status</Label>
-            <Select
-              value={filters.adminStatus}
-              onValueChange={(value) => handleInputChange("adminStatus", value)}
-            >
-              <SelectTrigger id="adminStatus">
-                <SelectValue placeholder="Select admin status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All (Approved)</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
-                <SelectItem value="revision_requested">Revision Requested</SelectItem>
               </SelectContent>
             </Select>
           </div>

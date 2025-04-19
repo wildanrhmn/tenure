@@ -134,4 +134,9 @@ module.exports = {
     },
   },
   plugins: [],
+  safelist: [
+    {
+      pattern: /^data-\[state=active\]:/,
+    },
+  ],
 }
