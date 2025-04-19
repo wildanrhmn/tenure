@@ -19,6 +19,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 const Navbar = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const searchRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { user, isAuthenticated, signOut } = useAuth();
@@ -46,6 +47,14 @@ const Navbar = () => {
     } catch (error) {
       console.error('Logout error:', error);
       toast.error('Failed to logout');
+    }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/properties?search=${encodeURIComponent(searchQuery.trim())}`);
+      setIsSearchOpen(false);
     }
   };
 
@@ -190,17 +199,22 @@ const Navbar = () => {
           }`}
         >
           <div className="container mx-auto">
-            <div className="relative">
+            <form onSubmit={handleSearch} className="relative">
               <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#9F8170]" />
               <input
                 type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search properties, locations..."
                 className="w-full rounded-xl border-2 border-[#E8E8E0] bg-white/50 py-3 pl-12 pr-32 text-[#333333] focus:ring-2 focus:ring-[#2A623D] focus:outline-none transition-all duration-300 text-lg"
               />
-              <Button className="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-[#1A365D] to-[#2A623D] text-white hover:opacity-90 rounded-lg transition-all duration-300 h-10 px-6 shadow-md">
+              <Button 
+                type="submit"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-[#1A365D] to-[#2A623D] text-white hover:opacity-90 rounded-lg transition-all duration-300 h-10 px-6 shadow-md"
+              >
                 Search
               </Button>
-            </div>
+            </form>
           </div>
         </div>
       </header>
